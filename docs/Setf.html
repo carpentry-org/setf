@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <link rel="stylesheet" href="/style.css">
+    </head>
+    <body>
+        <div class="content">
+            <div class="logo">
+                <a href="">
+                    <img src="">
+                </a>
+                <div class="title">
+                    Setf
+                </div>
+                <div class="index">
+                    <ul>
+                        <li>
+                            <a href="Setf.html">
+                                Setf
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <h1>
+                Setf
+            </h1>
+            <div class="module-description">
+                <p>is a module that emulates a simple version of
+<a href="http://www.lispworks.com/documentation/HyperSpec/Body/m_setf_.htm#setf"><code>setf</code></a>
+that allows you to register your own places using
+<a href="#register-place"><code>register-place</code></a>.</p>
+
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#register-place">
+                    <h3 id="register-place">
+                        register-place
+                    </h3>
+                </a>
+                <div class="description">
+                    dynamic
+                </div>
+                <p class="sig">
+                    Dynamic
+                </p>
+                <pre class="args">
+                    (register-place name builder)
+                </pre>
+                <p class="doc">
+                    <p>registers a place of name <code>name</code> using the expression
+builder <code>builder</code>.</p>
+<p>Example:</p>
+<pre><code>(register-place 'nth (fn [args] `(Array.aset %@args)))
+</code></pre>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#register-simple-place">
+                    <h3 id="register-simple-place">
+                        register-simple-place
+                    </h3>
+                </a>
+                <div class="description">
+                    dynamic
+                </div>
+                <p class="sig">
+                    Dynamic
+                </p>
+                <pre class="args">
+                    (register-simple-place name setter)
+                </pre>
+                <p class="doc">
+                    <p>registers a place of name <code>name</code> that uses the
+setter <code>setter</code>.</p>
+<p>Example:</p>
+<pre><code>(register-simple-place 'nth 'Array.aset)
+</code></pre>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#register-struct-places">
+                    <h3 id="register-struct-places">
+                        register-struct-places
+                    </h3>
+                </a>
+                <div class="description">
+                    dynamic
+                </div>
+                <p class="sig">
+                    Dynamic
+                </p>
+                <pre class="args">
+                    (register-struct-places t)
+                </pre>
+                <p class="doc">
+                    <p>registers all members of a struct-like type as
+places.</p>
+<p>Example:</p>
+<pre><code>(register-struct-places 'Vector2)
+
+(let-do [x (Vector2.init 1 2)]
+  (setf (Vector2.x &amp;x) 10)
+  x) ; =&gt; (Vector2 10  2)
+</code></pre>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#setf">
+                    <h3 id="setf">
+                        setf
+                    </h3>
+                </a>
+                <div class="description">
+                    macro
+                </div>
+                <p class="sig">
+                    Macro
+                </p>
+                <pre class="args">
+                    (setf place val)
+                </pre>
+                <p class="doc">
+                    <p>sets the value under the place <code>place</code> to the value <code>val</code>.</p>
+<p>Example:</p>
+<pre><code>(def x 1)
+(setf x 10)
+x ; =&gt; 10
+
+(def x [1 2 3])
+(setf (nth &amp;x 1) 10)
+x ; =&gt; [1 10 3]
+</code></pre>
+
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,87 @@
+(defmodule Setf
+  (hidden places)
+  (defdynamic places {})
+
+  (doc register-place "registers a place of name `name` using the expression
+builder `builder`.
+
+Example:
+```
+(register-place 'nth (fn [args] `(Array.aset %@args)))
+```")
+  (defndynamic register-place [name builder]
+    (set! Setf.places (Map.put Setf.places name builder)))
+
+  (doc register-simple-place "registers a place of name `name` that uses the
+setter `setter`.
+
+Example:
+```
+(register-simple-place 'nth 'Array.aset)
+```")
+  (defndynamic register-simple-place [name setter]
+    (Setf.register-place name (fn [args] (cons setter args))))
+
+  (doc register-struct-places "registers all members of a struct-like type as
+places.
+
+Example:
+```
+(register-struct-places 'Vector2)
+
+(let-do [x (Vector2.init 1 2)]
+  (setf (Vector2.x &x) 10)
+  x) ; => (Vector2 10  2)
+```")
+  (defndynamic register-struct-places [t]
+    (map
+      (fn [member]
+        (let [name (car member)
+              getter (Symbol.prefix t name)
+              setter (Symbol.prefix t (Symbol.concat ['set- name '!]))]
+          (Setf.register-simple-place getter setter)))
+      (eval `(members %t))))
+
+  (hidden get-place)
+  (defndynamic get-place [n]
+    (Map.get Setf.places n))
+
+  (doc setf "sets the value under the place `place` to the value `val`.
+
+Example:
+```
+(def x 1)
+(setf x 10)
+x ; => 10
+
+(def x [1 2 3])
+(setf (nth &x 1) 10)
+x ; => [1 10 3]
+```")
+  (defmacro setf [place val]
+    (let [place (if (symbol? place) `(sym %place) place)
+          key (if (and (list? place) (not (empty? place)))
+                 (car place)
+                 'place-malformed)
+          setter? (Setf.get-place key)]
+      (cond
+        (= key 'place-malformed)
+          (macro-error (list "The `setf` place " place " is malformed. A list or symbol was expected"))
+        (= nil setter?)
+          (macro-error (list "I didn’t find a `setf` place for " key ". Is it defined?"))
+        (setter? (cons-last val (cdr place))))))
+)
+
+(Setf.register-simple-place 'sym 'set!)
+(Setf.register-simple-place 'nth 'Array.aset!)
+(Setf.register-simple-place 'char-at 'String.string-set!)
+; something is fishy with these
+;(register-place 'car
+;  (fn [args] `(set! %(car args) (cons %(cadr args) (cdr %(car args))))))
+;(register-place 'cdr
+;  (fn [args] `(set! %(car args) (cons (car %(car args)) %(cadr args)))))
+
+(eval (doc Setf "is a module that emulates a simple version of
+[`setf`](http://www.lispworks.com/documentation/HyperSpec/Body/m_setf_.htm#setf)
+that allows you to register your own places using
+[`register-place`](#register-place)."))

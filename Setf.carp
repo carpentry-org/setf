@@ -7,7 +7,7 @@ builder `builder`.
 
 Example:
 ```
-(register-place 'nth (fn [args] `(Array.aset %@args)))
+(register-place 'nth (fn [args] `(Array.aset! %@args)))
 ```")
   (defndynamic register-place [name builder]
     (set! Setf.places (Map.put Setf.places name builder)))
@@ -17,7 +17,7 @@ setter `setter`.
 
 Example:
 ```
-(register-simple-place 'nth 'Array.aset)
+(register-simple-place 'nth 'Array.aset!)
 ```")
   (defndynamic register-simple-place [name setter]
     (Setf.register-place name (fn [args] (cons setter args))))

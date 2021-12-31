@@ -46,6 +46,9 @@ Example:
   (defndynamic get-place [n]
     (Map.get Setf.places n))
 
+  (hidden malformed)
+  (defdynamic malformed (gensym-with 'place-malformed))
+
   (doc setf "sets the value under the place `place` to the value `val`.
 
 Example:
@@ -60,12 +63,12 @@ x ; => [1 10 3]
 ```")
   (defmacro setf [place val]
     (let [place (if (symbol? place) `(sym %place) place)
-          key (if (and (list? place) (not (empty? place)))
+          key (if (and (list? place) (not (empty? place)) (symbol? (car place)))
                  (car place)
-                 'place-malformed)
+                 Setf.malformed)
           setter? (Setf.get-place key)]
       (cond
-        (= key 'place-malformed)
+        (= key Setf.malformed)
           (macro-error (list "The `setf` place " place " is malformed. A list or symbol was expected"))
         (= nil setter?)
           (macro-error (list "I didn’t find a `setf` place for " key ". Is it defined?"))

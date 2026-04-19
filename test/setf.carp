@@ -1,4 +1,4 @@
-(load "setf.carp")
+(load "../Setf.carp")
 
 (deftype T [x Int y Int z Int])
 (derive T =)

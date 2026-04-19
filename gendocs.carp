@@ -1,4 +1,4 @@
-(load "setf.carp")
+(load "Setf.carp")
 
 (Project.config "title" "Setf")
 (Project.config "docs-directory" "./docs/")

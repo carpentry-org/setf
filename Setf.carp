@@ -40,7 +40,7 @@ Example:
               getter (Symbol.prefix t name)
               setter (Symbol.prefix t (Symbol.concat ['set- name '!]))]
           (Setf.register-simple-place getter setter)))
-      (eval `(members %t))))
+      (members t)))
 
   (hidden get-place)
   (defndynamic get-place [n]
@@ -84,7 +84,7 @@ x ; => [1 10 3]
 ;(register-place 'cdr
 ;  (fn [args] `(set! %(car args) (cons (car %(car args)) %(cadr args)))))
 
-(eval (doc Setf "is a module that emulates a simple version of
+(doc Setf "is a module that emulates a simple version of
 [`setf`](http://www.lispworks.com/documentation/HyperSpec/Body/m_setf_.htm#setf)
 that allows you to register your own places using
-[`register-place`](#register-place)."))
+[`register-place`](#register-place).")

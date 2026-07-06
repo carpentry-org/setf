@@ -6,6 +6,13 @@
 
 (Setf.register-simple-place 'T.x 'T.set-x!)
 
+(deftype V [x Int y Int])
+(derive V =)
+(derive V str)
+(Setf.register-struct-places 'V)
+
+(Setf.register-place 'aset-place (fn [args] (cons 'Array.aset! args)))
+
 (load "Test.carp")
 (use-all Test Setf)
 
@@ -52,5 +59,20 @@
                   (setf (T.x &x) 1)
                   x)
                 "setf works on custom types"
+  )
+  (assert-equal test
+                &(V.init 10 20)
+                &(let-do [v (V.init 1 2)]
+                  (setf (V.x &v) 10)
+                  (setf (V.y &v) 20)
+                  v)
+                "register-struct-places generates working places"
+  )
+  (assert-equal test
+                &[1 9 3]
+                &(let-do [x [1 2 3]]
+                  (setf (aset-place &x 1) 9)
+                  x)
+                "register-place works with a custom builder"
   )
 )

@@ -40,7 +40,7 @@ Example:
               getter (Symbol.prefix t name)
               setter (Symbol.prefix t (Symbol.concat ['set- name '!]))]
           (Setf.register-simple-place getter setter)))
-      (members t)))
+      (eval (list 'members t))))
 
   (hidden get-place)
   (defndynamic get-place [n]

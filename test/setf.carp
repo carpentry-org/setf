@@ -16,9 +16,23 @@
 (load "Test.carp")
 (use-all Test Setf)
 
-; a macro error aborts the compiler, so this path needs a child run
-(shell "{ carp -x test/non-symbol-place.carp 2>&1 | grep -q 'can only update a symbol' && printf caught || printf missed ; } > /tmp/setf-non-symbol-place.txt")
-(defdynamic non-symbol-place (read-file "/tmp/setf-non-symbol-place.txt"))
+; a macro error aborts the compiler, so these paths need a child run
+(defndynamic fixture-outcome [fixture pattern]
+  (let-do [marker (str "test/." fixture ".outcome")]
+    ; removing first means a failed write aborts read-file instead of reading stale
+    (shell (str "rm -f " marker))
+    (shell (str "{ carp -x test/" fixture ".carp 2>&1 | grep -q '" pattern
+                "' && printf caught || printf missed ; } > " marker))
+    (let-do [outcome (read-file marker)]
+      (shell (str "rm -f " marker))
+      outcome)))
+
+(defdynamic non-symbol-car
+  (fixture-outcome "non-symbol-car-place" "can only update a symbol"))
+(defdynamic non-symbol-cdr
+  (fixture-outcome "non-symbol-cdr-place" "can only update a symbol"))
+(defdynamic extra-args
+  (fixture-outcome "extra-args-place" "takes exactly one argument"))
 
 (deftest test
   (assert-dynamic-equal test
@@ -37,8 +51,18 @@
   )
   (assert-dynamic-equal test
                         "caught"
-                        non-symbol-place
+                        non-symbol-car
                         "setf rejects a car place that is not a symbol"
+  )
+  (assert-dynamic-equal test
+                        "caught"
+                        non-symbol-cdr
+                        "setf rejects a cdr place that is not a symbol"
+  )
+  (assert-dynamic-equal test
+                        "caught"
+                        extra-args
+                        "setf rejects a car place with extra arguments"
   )
   (assert-equal test
                 &[1 2 3]

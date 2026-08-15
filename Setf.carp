@@ -49,8 +49,11 @@ Example:
   (hidden place-symbol)
   (defndynamic place-symbol [name args]
     (let [target (car args)]
-      (if (symbol? target)
-        target
+      (cond
+        (/= 2 (length args))
+          (macro-error (list "The `setf` place " name " takes exactly one argument, but got " (- (length args) 1)))
+        (symbol? target)
+          target
         (macro-error (list "The `setf` place " name " can only update a symbol, but got " target)))))
 
   (hidden malformed)

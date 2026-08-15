@@ -46,6 +46,13 @@ Example:
   (defndynamic get-place [n]
     (Map.get Setf.places n))
 
+  (hidden place-symbol)
+  (defndynamic place-symbol [name args]
+    (let [target (car args)]
+      (if (symbol? target)
+        target
+        (macro-error (list "The `setf` place " name " can only update a symbol, but got " target)))))
+
   (hidden malformed)
   (defdynamic malformed (gensym-with 'place-malformed))
 
@@ -78,13 +85,29 @@ x ; => [1 10 3]
 (Setf.register-simple-place 'sym 'set!)
 (Setf.register-simple-place 'nth 'Array.aset!)
 (Setf.register-simple-place 'char-at 'String.string-set!)
-; something is fishy with these
-;(register-place 'car
-;  (fn [args] `(set! %(car args) (cons %(cadr args) (cdr %(car args))))))
-;(register-place 'cdr
-;  (fn [args] `(set! %(car args) (cons (car %(car args)) %(cadr args)))))
+(Setf.register-place 'car
+  (fn [args]
+    (let [target (Setf.place-symbol 'car args)]
+      `(set! %target (cons %(cadr args) (cdr %target))))))
+(Setf.register-place 'cdr
+  (fn [args]
+    (let [target (Setf.place-symbol 'cdr args)]
+      `(set! %target (cons (car %target) %(cadr args))))))
 
 (doc Setf "is a module that emulates a simple version of
 [`setf`](http://www.lispworks.com/documentation/HyperSpec/Body/m_setf_.htm#setf)
 that allows you to register your own places using
-[`register-place`](#register-place).")
+[`register-place`](#register-place).
+
+The places that come registered out of the box are a bare symbol, `nth` and
+`char-at`, which all set values at runtime, and `car` and `cdr`, which set the
+head and tail of a dynamic list at macro time:
+
+```
+(defdynamic x '(2 2 3))
+(setf (car x) 1)
+x ; => (1 2 3)
+```
+
+Because `car` and `cdr` expand to a `set!` of the list itself, their argument
+has to be a symbol; anything else is a macro error.")

@@ -34,6 +34,15 @@
 <a href="http://www.lispworks.com/documentation/HyperSpec/Body/m_setf_.htm#setf"><code>setf</code></a>
 that allows you to register your own places using
 <a href="#register-place"><code>register-place</code></a>.</p>
+<p>The places that come registered out of the box are a bare symbol, <code>nth</code> and
+<code>char-at</code>, which all set values at runtime, and <code>car</code> and <code>cdr</code>, which set the
+head and tail of a dynamic list at macro time:</p>
+<pre><code>(defdynamic x '(2 2 3))
+(setf (car x) 1)
+x ; =&gt; (1 2 3)
+</code></pre>
+<p>Because <code>car</code> and <code>cdr</code> expand to a <code>set!</code> of the list itself, their argument
+has to be a symbol; anything else is a macro error.</p>
 
                 </div>
                 <div class="binder">

@@ -1,0 +1,4 @@
+(load "../Setf.carp")
+(use Setf)
+
+(setf (car (list 1 2 3)) 9)

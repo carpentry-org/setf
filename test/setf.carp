@@ -16,22 +16,54 @@
 (load "Test.carp")
 (use-all Test Setf)
 
+; a macro error aborts the compiler, so these paths need a child run
+(defndynamic fixture-outcome [fixture pattern]
+  (let-do [marker (str "test/." fixture ".outcome")]
+    ; removing first means a failed write aborts read-file instead of reading stale
+    (shell (str "rm -f " marker))
+    (shell (str "{ carp -x test/" fixture ".carp 2>&1 | grep -q '" pattern
+                "' && printf caught || printf missed ; } > " marker))
+    (let-do [outcome (read-file marker)]
+      (shell (str "rm -f " marker))
+      outcome)))
+
+(defdynamic non-symbol-car
+  (fixture-outcome "non-symbol-car-place" "can only update a symbol"))
+(defdynamic non-symbol-cdr
+  (fixture-outcome "non-symbol-cdr-place" "can only update a symbol"))
+(defdynamic extra-args
+  (fixture-outcome "extra-args-place" "takes exactly one argument"))
+
 (deftest test
-  ; as of yet unimplemented
-  ;(assert-dynamic-equal test
-  ;                      '(1 2 3)
-  ;                      (let-do [x '(2 2 3)]
-  ;                        (setf (car x) 1)
-  ;                        x)
-  ;                      "setf works for car"
-  ;)
-  ;(assert-dynamic-equal test
-  ;                      '(1 2)
-  ;                      (let-do [x '(1 2 3)]
-  ;                        (setf (cdr x) '(2))
-  ;                        x)
-  ;                      "setf works for cdr"
-  ;)
+  (assert-dynamic-equal test
+                        '(1 2 3)
+                        (let-do [x '(2 2 3)]
+                          (setf (car x) 1)
+                          x)
+                        "setf works for car"
+  )
+  (assert-dynamic-equal test
+                        '(1 2)
+                        (let-do [x '(1 2 3)]
+                          (setf (cdr x) '(2))
+                          x)
+                        "setf works for cdr"
+  )
+  (assert-dynamic-equal test
+                        "caught"
+                        non-symbol-car
+                        "setf rejects a car place that is not a symbol"
+  )
+  (assert-dynamic-equal test
+                        "caught"
+                        non-symbol-cdr
+                        "setf rejects a cdr place that is not a symbol"
+  )
+  (assert-dynamic-equal test
+                        "caught"
+                        extra-args
+                        "setf rejects a car place with extra arguments"
+  )
   (assert-equal test
                 &[1 2 3]
                 &(let-do [x [1 3 3]]

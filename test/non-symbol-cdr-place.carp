@@ -1,0 +1,4 @@
+(load "../Setf.carp")
+(use Setf)
+
+(setf (cdr (list 1 2 3)) '(9))

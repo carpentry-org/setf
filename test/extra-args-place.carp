@@ -1,0 +1,7 @@
+(load "../Setf.carp")
+(use Setf)
+
+(defdynamic y 77)
+(defdynamic x '(1 2 3))
+
+(setf (car x y) 999)
